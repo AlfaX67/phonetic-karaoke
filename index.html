@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Phonetic Karaoke Player</title>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    textarea, input { width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    #player-container { margin-top: 20px; max-width: 640px; }
+  </style>
+</head>
+<body>
+  <h1>Phonetic Karaoke Player</h1>
+  <p>1) Gere seu arquivo VTT de fonética simplificada (sem símbolos IPA).</p>
+  <p>2) Cole abaixo o link do YouTube e o conteúdo do arquivo VTT:</p>
+  <input id="videoUrl" type="text" placeholder="Link YouTube (https://www.youtube.com/watch?v=... ou https://youtu.be/...)" />
+  <textarea id="vttText" rows="10" placeholder="Cole aqui o conteúdo do arquivo .vtt, incluindo cabeçalho WEBVTT"></textarea>
+  <button onclick="initPlayer()">Load Player</button>
+
+  <div id="player-container"></div>
+
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-youtube/dist/Youtube.min.js"></script>
+  <script>
+    function initPlayer() {
+      var url = document.getElementById('videoUrl').value.trim();
+      var vtt = document.getElementById('vttText').value;
+      var match = url.match(/(?:v=|\/)([\w-]{11})(?:[&?]|$)/);
+      if (!match) { alert('Insira um link válido do YouTube.'); return; }
+      var videoID = match[1];
+      if (!vtt.startsWith('WEBVTT')) { alert('O conteúdo do VTT deve começar com "WEBVTT".'); return; }
+      // Create blob URL for VTT
+      var blob = new Blob([vtt], { type: 'text/vtt' });
+      var vttUrl = URL.createObjectURL(blob);
+      // Build video.js player markup
+      var container = document.getElementById('player-container');
+      container.innerHTML = `
+        <video id="player" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360"
+               data-setup='{"techOrder":["youtube"], "sources":[{"type":"video/youtube","src":"https://www.youtube.com/watch?v=${videoID}"}]}'>
+          <track kind="captions" label="PT-Fonética" srclang="pt" src="${vttUrl}" default>
+        </video>`;
+      videojs('player');
+    }
+  </script>
+</body>
+</html>
